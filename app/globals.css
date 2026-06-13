@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0a0a0a; /* El vacío */
+  color: #e5e5e5;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Eliminamos el scroll, el canvas 3D será el único mundo visible */
+  font-family: monospace; /* Estética clínica y pragmática */
+}
+
+/* Hackeando el visor nativo de react-force-graph */
+.scene-tooltip {
+  background-color: rgba(10, 10, 10, 0.9) !important;
+  color: #a1a1aa !important; /* Texto zinc-400 */
+  border: 1px solid #27272a !important; /* Borde zinc-800 */
+  padding: 12px 16px !important;
+  border-radius: 6px !important;
+  font-family: monospace !important;
+  font-size: 14px;
+  max-width: 320px;
+  white-space: pre-wrap !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.scene-tooltip strong {
+  color: #10b981;
 }
