@@ -139,6 +139,23 @@ export default function Home() {
               </a>
             )}
 
+            {/* Renderizado de Contratos (Bounties) */}
+            {selectedNode.bounties && selectedNode.bounties.length > 0 && (
+              <div className="mb-6 p-3 border border-yellow-500/30 bg-yellow-900/20 rounded">
+                <h4 className="text-yellow-400 font-bold text-xs tracking-widest mb-2">
+                  [ CONTRATOS ACTIVOS ]
+                </h4>
+                <ul className="space-y-2">
+                  {selectedNode.bounties.map((bountyId: string, index: number) => (
+                    <li key={index} className="text-gray-300 text-sm font-mono flex items-center justify-between">
+                      <span>ID: {bountyId.substring(0, 8)}...</span>
+                      <span className="text-yellow-400 font-bold">FONDOS INYECTADOS</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4 mt-auto">
               {/* VISTA 1: BOTONES PRINCIPALES */}
               {!actionType && !showSponsorPanel && (
