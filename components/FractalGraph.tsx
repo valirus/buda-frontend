@@ -65,11 +65,16 @@ export default function FractalGraph() {
         ref={graphRef}
         graphData={graphData}
         
-        // LEY DE MASA Y VOLUMEN (V)
+        // LEY DE MASA Y VOLUMEN (Escalado por Raíz Cuadrada del Capital)
         nodeVal={(node: any) => {
           const baseVolume = 1;
-          // Elevamos la masa a 63 para que la raíz cúbica (radio visual) se multiplique por ~4
-          const capitalMultiplier = (node.bounties && node.bounties.length > 0) ? 63 : 0;
+          const funding = node.total_funding || 0;
+          
+          if (funding === 0) return baseVolume;
+
+          // Si inyectan $100,000 -> raiz(100,000) = 316 * 0.3 = 94 de Volumen (Masivo)
+          // Si inyectan $777 -> raiz(777) = 27 * 0.3 = 8 de Volumen (Visiblemente mediano)
+          const capitalMultiplier = Math.sqrt(funding) * 0.3; 
           return baseVolume + capitalMultiplier;
         }}
         
