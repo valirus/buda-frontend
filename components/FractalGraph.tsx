@@ -66,10 +66,10 @@ export default function FractalGraph() {
         graphData={graphData}
         
         // LEY DE MASA Y VOLUMEN (V)
-        // V(n) = V_0 + \alpha * C_i
         nodeVal={(node: any) => {
           const baseVolume = 1;
-          const capitalMultiplier = (node.bounties && node.bounties.length > 0) ? 5 : 0;
+          // Elevamos la masa a 63 para que la raíz cúbica (radio visual) se multiplique por ~4
+          const capitalMultiplier = (node.bounties && node.bounties.length > 0) ? 63 : 0;
           return baseVolume + capitalMultiplier;
         }}
         
