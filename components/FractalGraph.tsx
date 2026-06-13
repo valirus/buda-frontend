@@ -102,11 +102,18 @@ export default function FractalGraph() {
         onNodeClick={(node: any) => setSelectedNode(node)}
         onBackgroundClick={() => setSelectedNode(null)}
         nodeLabel={(node: any) => `
-          <div>
+          <div style="background: rgba(0,0,0,0.9); border: 1px solid #fbbf24; padding: 10px; border-radius: 6px; box-shadow: 0 0 10px rgba(251,191,36,0.2);">
             <div style="font-size: 10px; color: #52525b; margin-bottom: 4px;">
-              ID: ${node.id.split('-')[0]}... ${node.bounties && node.bounties.length > 0 ? '💰 [BOUNTY ACTIVO]' : ''}
+              ID: ${node.id.split('-')[0]}... ${node.bounties && node.bounties.length > 0 ? '💰 [BOUNTY]' : ''}
             </div>
-            <div>${node.text}</div>
+            <div style="margin-bottom: 8px; max-width: 200px; white-space: normal;">
+              ${node.text}
+            </div>
+            <div style="font-size: 10px; color: #10b981; font-family: monospace; border-top: 1px solid #3f3f46; padding-top: 6px;">
+              [ TELEMETRÍA DE FÍSICA ]<br/>
+              Data Backend: <span style="color: #fbbf24;">${node.total_funding !== undefined ? '$' + node.total_funding : '⚠️ UNDEFINED (Backend Viejo)'}</span><br/>
+              Masa Visual: ${(1 + (Math.sqrt(node.total_funding || 0) * 0.3)).toFixed(2)} V
+            </div>
           </div>
         `}
       />
