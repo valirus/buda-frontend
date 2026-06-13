@@ -48,6 +48,7 @@ export default function Home() {
   const [newPremise, setNewPremise] = useState("");
   const [newEvidence, setNewEvidence] = useState("");
   const [showSponsorPanel, setShowSponsorPanel] = useState(false);
+  const [aiVerdict, setAiVerdict] = useState<{status: 'APPROVED' | 'REJECTED', message: string} | null>(null);
 
   if (!currentUser) {
     return <AuthGate />;
@@ -55,6 +56,25 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col bg-[#0a0a0a] relative overflow-hidden">
+      {/* MODAL DEL JUEZ AUTÓNOMO (IA) */}
+      {aiVerdict && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className={`w-[500px] p-6 border rounded shadow-[0_0_30px_rgba(0,0,0,0.5)] ${aiVerdict.status === 'APPROVED' ? 'bg-emerald-950/80 border-emerald-500/50' : 'bg-rose-950/80 border-rose-500/50'}`}>
+            <h3 className={`font-mono text-lg font-bold mb-4 tracking-widest ${aiVerdict.status === 'APPROVED' ? 'text-emerald-400' : 'text-rose-400'}`}>
+              [ VEREDICTO DE LA IA: {aiVerdict.status} ]
+            </h3>
+            <p className="text-zinc-300 font-mono text-sm leading-relaxed mb-6">
+              {aiVerdict.message}
+            </p>
+            <button 
+              onClick={() => setAiVerdict(null)} 
+              className="w-full py-3 border border-zinc-700 bg-black text-white hover:bg-zinc-800 font-mono text-sm transition-colors uppercase tracking-widest"
+            >
+              CERRAR TRANSMISIÓN
+            </button>
+          </div>
+        </div>
+      )}
       
       <FractalGraph />
 
@@ -279,16 +299,32 @@ export default function Home() {
                       
                       if (!text || !selectedNode) return;
 
-                      let response;
-
+                      // Si es una síntesis para cobrar un bounty, activamos la vía de la IA
                       if (actionType === 'SYNTHESIZES' && selectedNode.bounties && selectedNode.bounties.length > 0) {
-                        response = await fetch("https://buda-backend.onrender.com/bounties/resolver", {
+                        const response = await fetch("https://buda-backend.onrender.com/bounties/resolver", {
                           method: "POST",
                           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                           body: JSON.stringify({ bounty_id: selectedNode.bounties[0], target_node_id: selectedNode.id, synthesis_text: text })
                         });
-                      } else {
-                        response = await fetch("https://buda-backend.onrender.com/nodos/interactuar", {
+                        
+                        const data = await response.json();
+
+                        if (response.ok) {
+                          // IA Aprobó
+                          setAiVerdict({ status: 'APPROVED', message: data.razon_ia || "Síntesis validada. Fondos liberados." });
+                          await useGraphStore.getState().fetchGraphData(); 
+                          await useGraphStore.getState().fetchUserStats(currentUser.user_id);
+                          useGraphStore.getState().setActionType(null);    
+                          inputElement.value = "";                        
+                          if (evidenceElement) evidenceElement.value = ""; 
+                        } else {
+                          // IA Rechazó o hubo otro error
+                          setAiVerdict({ status: 'REJECTED', message: data.razon_ia || data.error || "Argumento inválido." });
+                        }
+                      } 
+                      // Si es un simple Support/Refute (sin bounty), va por la vía normal sin IA
+                      else {
+                        const response = await fetch("https://buda-backend.onrender.com/nodos/interactuar", {
                           method: "POST",
                           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                           body: JSON.stringify({ 
@@ -298,16 +334,13 @@ export default function Home() {
                             evidence_link: evidenceLink 
                           })
                         });
-                      }
 
-                      if (response.ok) {
-                        await useGraphStore.getState().fetchGraphData(); 
-                        if (actionType === 'SYNTHESIZES' && selectedNode.bounties && selectedNode.bounties.length > 0) {
-                          await useGraphStore.getState().fetchUserStats(currentUser.user_id);
+                        if (response.ok) {
+                          await useGraphStore.getState().fetchGraphData(); 
+                          useGraphStore.getState().setActionType(null);    
+                          inputElement.value = "";                        
+                          if (evidenceElement) evidenceElement.value = ""; 
                         }
-                        useGraphStore.getState().setActionType(null);    
-                        inputElement.value = "";                        
-                        if (evidenceElement) evidenceElement.value = ""; 
                       }
                     }}
                     className="w-full py-3 border border-zinc-600 bg-zinc-800 text-white font-mono text-sm hover:bg-zinc-700 transition-colors"
